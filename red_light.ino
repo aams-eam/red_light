@@ -7,20 +7,6 @@
 #define DS3231_I2C_ADDRESS 104    // RTC is connected, address is Hex68 (Decimal 104)
 #define ON_TIME 9
 
-
-byte seconds, minutes, hours, day, date, month, year;
-byte temp_hours = 0, temp_minutes = 0;
-char weekDay[4];
-byte tMSB, tLSB;
-float my_temp;
-char my_array[100];            // Character array for printing something.
-bool b = false;
-int hour_blink = 0;
-bool blink_bool = true;
-bool alarm = false;
-int bulb_state = HIGH;
-
-
 #ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
 #endif
@@ -37,6 +23,17 @@ U8G2_SSD1306_128X32_UNIVISION_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/
 #define M_WTIME  2//Minutes tilting so you can change minutes
 //next state returns to STANDBY
 
+
+byte seconds, minutes, hours, day, date, month, year;
+byte temp_hours = 0, temp_minutes = 0;
+char weekDay[4];
+byte tMSB, tLSB;
+char my_array[100];            // Character array for printing something.
+int hour_blink = 0;
+bool blink_bool = true;
+bool alarm = false;
+int bulb_state = HIGH;
+
 const int BULB = 6; //pin of the activation of the red bulb
 
 //for setting up the buttons for interruptions
@@ -51,15 +48,11 @@ volatile boolean f2 = false;
 //indicates de actual state of the machine state
 byte state = STANDBY;
 
-long actual_time = 0; //get actual time
-long wakeup_time = 0; //get actual time and add 7 hours 37 minutes
-
 // BUTTON 1 VARIABLES AND ISR
 long buttonTimer1 = 0;
 long longPressTime1 = 500;
 
 boolean buttonActive1 = false;
-boolean longPressActive1 = false;
 
 //changes to the next mode
 void fbutton1() {
@@ -306,12 +299,9 @@ void loop() {
 
         }
 
-        if ((millis() - buttonTimer1 > longPressTime1) && (longPressActive1 == false)) {
+        if (millis() - buttonTimer1 > longPressTime1) {
 
-          longPressActive1 = true;
           Serial.println("LONG PRESSED BUTTON");
-          longPressActive1 = false;
-
           buttonActive1 = false;
 
           if (temp_hours == 0 && temp_minutes == 0) {
@@ -347,9 +337,9 @@ void loop() {
         }
 
         if ((millis() - buttonTimer2 > longPressTime2) && (longPressActive2 == false)) {
-
           longPressActive2 = true;
           Serial.println("LONG PRESSED BUTTON");
+          buttonActive2 = false;
           alarm = !alarm;
         }
 
@@ -357,19 +347,8 @@ void loop() {
 
         if (buttonActive2 == true) {
 
-          if (longPressActive2 == true) {
-
-            longPressActive2 = false;
-            f1 = false;
-            f2 = false;
-
-          } else {
-
-            Serial.println("SHORT");  //does nothing
-
-          }
-
           buttonActive2 = false;
+          longPressActive2 = false;
 
         }
 
