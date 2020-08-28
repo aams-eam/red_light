@@ -219,13 +219,12 @@ void setup() {
   pinMode(BULB, OUTPUT);  //bulb
   pinMode(button1, INPUT_PULLUP); //button for changing mode
   pinMode(button2, INPUT_PULLUP); //button for adding time
-  attachInterrupt(digitalPinToInterrupt(button1), fbutton1, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(button1), fbutton1, FALLING);
   attachInterrupt(digitalPinToInterrupt(button2), fbutton2, FALLING);
   Serial.begin(9600);
   Serial.println("PROGRAM READY");
   digitalWrite(BULB, HIGH); //RELAY with na (normally open) works with inverse logic, need to be
   //to ground to be connected
-
 }
 
 void loop() {
@@ -236,55 +235,48 @@ void loop() {
   get3231Date();
   Wire.end();
 
-
-  if (alarm == true) {
-
-    if (temp_hours == hours && temp_minutes == minutes) {
-
-      if (bulb_state == LOW) { // RELAY IS ON
-        Serial.print("IF");
-        bulb_state = HIGH;
-        Serial.print("new BULB_STATE: ");
-        Serial.println(bulb_state);
-        noInterrupts();
-        digitalWrite(BULB, bulb_state);
-        cli();
-        interrupts();
-        alarm = false;
-
-      } else {
-        Serial.print("ELSE");
-        bulb_state = LOW;
-        Serial.print("new BULB_STATE: ");
-        Serial.println(bulb_state);
-        noInterrupts();
-        digitalWrite(BULB, bulb_state);
-        cli();
-        interrupts();
-
-        // ADD ANOTHER TIMER FOR TURNING OFF THE BULB
-        if ((temp_minutes >= 60 - ON_TIME) && (temp_hours == 23)) {
-          temp_minutes = (temp_minutes + ON_TIME) % 60;
-          temp_hours = 0;
-        } else if (temp_minutes >= 60 - ON_TIME) {
-          temp_minutes = (temp_minutes + ON_TIME) % 60;
-          temp_hours++;
-        } else {
-          temp_minutes += ON_TIME;
-        }
-
-      }
-
-    }
-  }
-
-
   switch (state) {
 
     case STANDBY:
 
-      //shows the hour
+      // ALARM LOGIC FOR ACTIVATING THE RELAY
       if (alarm == true) {
+
+        if (temp_hours == hours && temp_minutes == minutes) {
+
+          if (bulb_state == LOW) { // RELAY IS ON
+            bulb_state = HIGH;
+            Serial.print("new BULB_STATE: ");
+            Serial.println(bulb_state);
+            noInterrupts();
+            digitalWrite(BULB, bulb_state);
+            cli();
+            interrupts();
+            alarm = false;
+
+          } else {
+            bulb_state = LOW;
+            Serial.print("new BULB_STATE: ");
+            Serial.println(bulb_state);
+            noInterrupts();
+            digitalWrite(BULB, bulb_state);
+            cli();
+            interrupts();
+
+            // ADD ANOTHER TIMER FOR TURNING OFF THE BULB
+            if ((temp_minutes >= 60 - ON_TIME) && (temp_hours == 23)) {
+              temp_minutes = (temp_minutes + ON_TIME) % 60;
+              temp_hours = 0;
+            } else if (temp_minutes >= 60 - ON_TIME) {
+              temp_minutes = (temp_minutes + ON_TIME) % 60;
+              temp_hours++;
+            } else {
+              temp_minutes += ON_TIME;
+            }
+
+          }
+
+        }
 
         u8g2.clearBuffer();          // clear the internal memory
         u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
@@ -300,10 +292,10 @@ void loop() {
         sprintf(my_array, "%02u:%02u ALARM - OFF", hours, minutes);
         print_oled(my_array);
       }
-      
 
-      // Serial.println(button1c);
-      // Serial.println(button2c);
+
+
+      //BUTTON LOGIC FOR CHANGING MODE OR ACTIVATING/DEACTIVATING THE ALARM
       //BUTTON 1
       if (digitalRead(button1) == LOW) { // first button pressed
 
@@ -318,28 +310,24 @@ void loop() {
 
           longPressActive1 = true;
           Serial.println("LONG PRESSED BUTTON");
+          longPressActive1 = false;
+
+          buttonActive1 = false;
+
+          if (temp_hours == 0 && temp_minutes == 0) {
+            temp_hours = hours;
+            temp_minutes = minutes;
+          }
+          
+          state = H_WTIME;
+          f1 = false;
+          f2 = false;
+          
         }
 
       } else { // no button pressed
 
         if (buttonActive1 == true) {
-
-          if (longPressActive1 == true) {
-
-            longPressActive1 = false;
-            f1 = false;
-            f2 = false;
-            if (temp_hours == 0 && temp_minutes == 0) {
-              temp_hours = hours;
-              temp_minutes = minutes;
-            }
-            state = H_WTIME;
-
-          } else {
-
-            Serial.println("SHORT");  //does nothing
-
-          }
 
           buttonActive1 = false;
 
@@ -362,6 +350,7 @@ void loop() {
 
           longPressActive2 = true;
           Serial.println("LONG PRESSED BUTTON");
+          alarm = !alarm;
         }
 
       } else { // no button pressed
@@ -373,7 +362,6 @@ void loop() {
             longPressActive2 = false;
             f1 = false;
             f2 = false;
-            alarm = !alarm;
 
           } else {
 
@@ -408,9 +396,11 @@ void loop() {
 
 
       if (f1) {
+
         state = M_WTIME;
         f1 = false;
         f2 = false;
+
       } else if (f2) {
 
         if (temp_hours == 23) {
