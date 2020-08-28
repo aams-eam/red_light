@@ -56,7 +56,7 @@ boolean buttonActive1 = false;
 
 //changes to the next mode
 void fbutton1() {
-  Serial.println("FBUTTON1 INTERRUPTION");
+  // Serial.println("FBUTTON1 INTERRUPTION");
   f1 = true;
 }
 
@@ -69,7 +69,7 @@ boolean longPressActive2 = false;
 
 volatile int button2c = 0;
 void fbutton2() {
-  Serial.println("FBUTTON2 INTERRUPTION");
+  // Serial.println("FBUTTON2 INTERRUPTION");
   f2 = true;
 }
 
@@ -96,7 +96,7 @@ void watchConsole()
     if (Serial.read() == 84) {      //If command = "T" Set Date
       set3231Date();
       get3231Date();
-      Serial.println(" ");
+      // Serial.println(" ");
     }
   }
 }
@@ -215,7 +215,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(button1), fbutton1, FALLING);
   attachInterrupt(digitalPinToInterrupt(button2), fbutton2, FALLING);
   Serial.begin(9600);
-  Serial.println("PROGRAM READY");
+  // Serial.println("PROGRAM READY");
   digitalWrite(BULB, HIGH); //RELAY with na (normally open) works with inverse logic, need to be
   //to ground to be connected
 }
@@ -240,7 +240,7 @@ void loop() {
           if (bulb_state == LOW) { // RELAY IS ON
             bulb_state = HIGH;
             Serial.print("new BULB_STATE: ");
-            Serial.println(bulb_state);
+            // Serial.println(bulb_state);
             noInterrupts();
             digitalWrite(BULB, bulb_state);
             cli();
@@ -250,7 +250,7 @@ void loop() {
           } else {
             bulb_state = LOW;
             Serial.print("new BULB_STATE: ");
-            Serial.println(bulb_state);
+            // Serial.println(bulb_state);
             noInterrupts();
             digitalWrite(BULB, bulb_state);
             cli();
@@ -301,7 +301,7 @@ void loop() {
 
         if (millis() - buttonTimer1 > longPressTime1) {
 
-          Serial.println("LONG PRESSED BUTTON");
+          // Serial.println("LONG PRESSED BUTTON");
           buttonActive1 = false;
 
           if (temp_hours == 0 && temp_minutes == 0) {
@@ -338,7 +338,7 @@ void loop() {
 
         if ((millis() - buttonTimer2 > longPressTime2) && (longPressActive2 == false)) {
           longPressActive2 = true;
-          Serial.println("LONG PRESSED BUTTON");
+          // Serial.println("LONG PRESSED BUTTON");
           buttonActive2 = false;
           alarm = !alarm;
         }
@@ -370,7 +370,7 @@ void loop() {
         sprintf(my_array, "SET HOUR - __:%02u", temp_minutes);
       }
 
-      Serial.println(my_array);
+      // Serial.println(my_array);
       print_oled(my_array);
 
 
@@ -407,7 +407,7 @@ void loop() {
         sprintf(my_array, "SET MINUTE - %02u:__", temp_hours);
       }
 
-      Serial.println(my_array);
+      // Serial.println(my_array);
       print_oled(my_array);
       if (f1) {
         state = STANDBY;
