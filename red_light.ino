@@ -56,8 +56,17 @@ boolean buttonActive1 = false;
 
 //changes to the next mode
 void fbutton1() {
-  // Serial.println("FBUTTON1 INTERRUPTION");
-  f1 = true;
+  
+  static unsigned long last_interrupt_time = 0;
+  unsigned long interrupt_time = millis();
+  // If interrupts come faster than 200ms, assume it's a bounce and ignore
+  if (interrupt_time - last_interrupt_time > 200)
+  {
+    Serial.println("FBUTTON1 INTERRUPTION");
+    f1 = true;
+  }
+  last_interrupt_time = interrupt_time;
+  
 }
 
 // BUTTON 2 VARIABLES AND ISR
@@ -69,8 +78,15 @@ boolean longPressActive2 = false;
 
 volatile int button2c = 0;
 void fbutton2() {
-  // Serial.println("FBUTTON2 INTERRUPTION");
-  f2 = true;
+  static unsigned long last_interrupt_time = 0;
+  unsigned long interrupt_time = millis();
+  // If interrupts come faster than 200ms, assume it's a bounce and ignore
+  if (interrupt_time - last_interrupt_time > 200)
+  {
+    Serial.println("FBUTTON2 INTERRUPTION");
+    f2 = true;
+  }
+  last_interrupt_time = interrupt_time;
 }
 
 
@@ -230,7 +246,7 @@ void loop() {
 
   switch (state) {
 
-    case STANDBY:
+    case STANDBY: Serial.println("STANDBY");
 
       // ALARM LOGIC FOR ACTIVATING THE RELAY
       if (alarm == true) {
@@ -308,11 +324,11 @@ void loop() {
             temp_hours = hours;
             temp_minutes = minutes;
           }
-          
+
           state = H_WTIME;
           f1 = false;
           f2 = false;
-          
+
         }
 
       } else { // no button pressed
@@ -357,7 +373,7 @@ void loop() {
       break;
 
 
-    case H_WTIME:
+    case H_WTIME: Serial.println("CHANGE HOURS");
       //shows the wake up time with hour tilting
       hour_blink++;
       if (hour_blink % 2 == 0) {
@@ -394,7 +410,8 @@ void loop() {
       break;
 
 
-    case M_WTIME:
+    case M_WTIME: Serial.println("CHANGE MINUTES");
+
       //shows the wake up time with minute tilting
       hour_blink++;
       if (hour_blink % 2 == 0) {
