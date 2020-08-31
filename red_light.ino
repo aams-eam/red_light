@@ -59,11 +59,25 @@ void fbutton1() {
   
   static unsigned long last_interrupt_time = 0;
   unsigned long interrupt_time = millis();
-  // If interrupts come faster than 200ms, assume it's a bounce and ignore
-  if (interrupt_time - last_interrupt_time > 200)
+  static boolean falling=true; //with static this variable is only declared once
+  
+  // If interrupts come faster than 50ms, assume it's a bounce and ignore
+  if (interrupt_time - last_interrupt_time > 50)
   {
-    Serial.println("FBUTTON1 INTERRUPTION");
-    f1 = true;
+    
+    if(falling==true){
+      Serial.println("BUTTON1 PRESSED");
+      f1 = true;
+      falling = false;
+      attachInterrupt(digitalPinToInterrupt(button1), fbutton1, RISING);
+    }
+    else{
+      Serial.println("BUTTON1 DROPPED");
+      Serial.println("");
+      falling = true;
+      attachInterrupt(digitalPinToInterrupt(button1), fbutton1, FALLING);
+    }
+      
   }
   last_interrupt_time = interrupt_time;
   
@@ -80,11 +94,24 @@ volatile int button2c = 0;
 void fbutton2() {
   static unsigned long last_interrupt_time = 0;
   unsigned long interrupt_time = millis();
-  // If interrupts come faster than 200ms, assume it's a bounce and ignore
-  if (interrupt_time - last_interrupt_time > 200)
+  static boolean falling=true; //with static this variable is only declared once
+  
+  // If interrupts come faster than 50ms, assume it's a bounce and ignore
+  if (interrupt_time - last_interrupt_time > 50)
   {
-    Serial.println("FBUTTON2 INTERRUPTION");
-    f2 = true;
+    
+    if(falling==true){
+      Serial.println("BUTTON2 PRESSED");
+      f2 = true;
+      falling = false;
+      attachInterrupt(digitalPinToInterrupt(button2), fbutton2, RISING);
+    }else{
+      Serial.println("BUTTON2 DROPPED");
+      Serial.println("");
+      falling = true;
+      attachInterrupt(digitalPinToInterrupt(button2), fbutton2, FALLING);
+    }
+      
   }
   last_interrupt_time = interrupt_time;
 }
@@ -246,7 +273,7 @@ void loop() {
 
   switch (state) {
 
-    case STANDBY: Serial.println("STANDBY");
+    case STANDBY:
 
       // ALARM LOGIC FOR ACTIVATING THE RELAY
       if (alarm == true) {
@@ -328,7 +355,6 @@ void loop() {
           state = H_WTIME;
           f1 = false;
           f2 = false;
-
         }
 
       } else { // no button pressed
@@ -373,7 +399,7 @@ void loop() {
       break;
 
 
-    case H_WTIME: Serial.println("CHANGE HOURS");
+    case H_WTIME:
       //shows the wake up time with hour tilting
       hour_blink++;
       if (hour_blink % 2 == 0) {
@@ -410,7 +436,7 @@ void loop() {
       break;
 
 
-    case M_WTIME: Serial.println("CHANGE MINUTES");
+    case M_WTIME:
 
       //shows the wake up time with minute tilting
       hour_blink++;
