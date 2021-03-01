@@ -250,7 +250,7 @@ float get3231Temp()
 
 void setup() {
 
-  // Wire.begin();
+  //Wire.begin();
   u8g2.begin(); //OLED display
   pinMode(BULB, OUTPUT);  //bulb
   pinMode(button1, INPUT_PULLUP); //button for changing mode

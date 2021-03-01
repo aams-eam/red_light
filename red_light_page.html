@@ -1,0 +1,29 @@
+<html>
+
+  <head>
+    <title>ESP8266 LED Control</title>
+  </head>
+
+
+  <body>
+
+    <button id="10" class="led">BOMBILLA</button>
+    <button id="11" class="led">LED AZUL</button>
+    <button id="12" class="led">LED VERDE</button>
+    <button id="13" class="led">LED ROJO</button>
+
+    <script src="jquery.min.js">
+    </script>
+
+    <script type="text/javascript">
+      $(document).ready(function(){
+        $(".led").click(function(){ var p =
+          $(this).attr('id');
+          $.get("https://192.168.0.1:80/", {pin:p});
+        });
+      });
+    </script>
+
+  </body>
+
+</html>
